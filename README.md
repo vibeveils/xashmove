@@ -303,7 +303,7 @@ should be confirmed on first `./gradlew build` / launch:
 - Compile-time: `LivingEntity.getJumpBoostPower()`, `Entity.getBlockSpeedFactor()/getBlockJumpFactor()`,
   `Entity.stuckSpeedMultiplier`, `MobEffects.SLOW_FALLING/LEVITATION`,
   `Attributes.GRAVITY/JUMP_STRENGTH`, `GuiGraphicsExtractor.text/centeredText`.
-- New in this version (compile-time): `Player.getProjectile`, `ChargedProjectiles.of(ItemStack)` and
+- New in this version (compile-time): `Player.getProjectile` and
   `DataComponents.CHARGED_PROJECTILES` (crossbow auto-reload), `net.minecraft.world.entity.projectile.Projectile`
   (arrow tuning), `Inventory.getContainerSize`, `Player.containerMenu.getCarried()`, `Minecraft.getFps()`,
   `ClientPacketListener.getPlayerInfo`, `HumanoidModel.head/rightArm/...` fields, `Screen.clearWidgets`.

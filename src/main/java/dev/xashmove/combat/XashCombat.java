@@ -12,11 +12,12 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
@@ -34,7 +35,6 @@ import dev.xashmove.server.XashServer;
  */
 public final class XashCombat {
 	private static final Identifier NO_COOLDOWN = XashMove.id("no_attack_cooldown");
-	private static final String TUNED_TAG = "xashmove_tuned";
 	/** Player -> server tick at which their crossbow auto-reloads. */
 	private static final Map<UUID, Long> RELOADS = new ConcurrentHashMap<>();
 	private static long ticks;
@@ -55,14 +55,17 @@ public final class XashCombat {
 	}
 
 	private static void onEntityLoad(Entity entity) {
-		if (entity.getType() != EntityType.ARROW && entity.getType() != EntityType.SPECTRAL_ARROW) return;
+		if (entity.getType() != EntityTypes.ARROW && entity.getType() != EntityTypes.SPECTRAL_ARROW) return;
 		if (!(entity instanceof Projectile arrow) || !(arrow.getOwner() instanceof ServerPlayer player)) return;
-		if (arrow.getTags().contains(TUNED_TAG)) return; // already tuned (e.g. chunk reload)
-		arrow.addTag(TUNED_TAG);
 		CombatVars c = XashServer.combat();
 		if (c == CombatVars.VANILLA) return;
+		// Only arrows that were just fired: still next to a shooter holding a bow/crossbow. This skips arrows
+		// re-loaded with their chunk, so their speed isn't scaled twice.
+		if (arrow.tickCount > 1 || arrow.distanceToSqr(player) > 9.0) return;
+		ItemStack main = player.getMainHandItem(), off = player.getOffhandItem();
+		if (!isBow(main) && !isCrossbow(main) && !isBow(off) && !isCrossbow(off)) return;
 
-		boolean crossbow = isCrossbow(player.getMainHandItem()) || (!isBow(player.getMainHandItem()) && isCrossbow(player.getOffhandItem()));
+		boolean crossbow = isCrossbow(main) || (!isBow(main) && isCrossbow(off));
 		double vel = crossbow ? c.crossbowVelocity() : c.bowVelocity();
 		// Arrow damage in Minecraft scales with impact speed, so faster arrows also hit harder.
 		if (vel != 1.0) arrow.setDeltaMovement(arrow.getDeltaMovement().scale(vel));
@@ -115,7 +118,7 @@ public final class XashCombat {
 			if (ammo.isEmpty()) return;
 			ItemStack one = ammo.copyWithCount(1);
 			if (!p.getAbilities().instabuild) ammo.shrink(1);
-			bow.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(one));
+			bow.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(ItemStackTemplate.fromNonEmptyStack(one)));
 			return;
 		}
 	}
