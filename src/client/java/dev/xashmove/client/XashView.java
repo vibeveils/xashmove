@@ -1,7 +1,7 @@
 package dev.xashmove.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
+import org.joml.Matrix4f;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -41,7 +41,7 @@ public final class XashView {
 			roll += s.punchRoll;
 			pitch += s.punchPitch;
 		}
-		if (roll != 0) pose.mulPose(Axis.ZP.rotationDegrees(roll));
-		if (pitch != 0) pose.mulPose(Axis.XP.rotationDegrees(pitch));
+		if (roll != 0) pose.mulPose(new Matrix4f().rotationZ((float) Math.toRadians(roll)));
+		if (pitch != 0) pose.mulPose(new Matrix4f().rotationX((float) Math.toRadians(pitch)));
 	}
 }

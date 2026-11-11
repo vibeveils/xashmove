@@ -197,7 +197,7 @@ the code was type-checked against stubs of those signatures. A few Minecraft met
 should be confirmed on first `./gradlew build` / launch:
 
 - Compile-time: `LivingEntity.getJumpBoostPower()`, `Entity.getBlockSpeedFactor()/getBlockJumpFactor()`,
-  `Entity.stuckSpeedMultiplier`, `Player.displayClientMessage(Component, boolean)`, `MobEffects.SLOW_FALLING/LEVITATION`,
+  `Entity.stuckSpeedMultiplier`, `MobEffects.SLOW_FALLING/LEVITATION`,
   `Attributes.GRAVITY/JUMP_STRENGTH`, `GuiGraphicsExtractor.text/centeredText`.
 - Mixin targets marked `require = 0` switch off quietly if they're renamed (check the log for Mixin warnings):
   `maxUpStep`, `calculateFallDamage`, `jumpInLiquid`, `goDownInWater`, `Player.maybeBackOffFromEdge`,

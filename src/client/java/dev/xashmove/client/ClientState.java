@@ -117,6 +117,6 @@ public final class ClientState {
 
 	public static void message(String text) {
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.player != null) mc.player.displayClientMessage(Component.literal(text), true);
+		if (mc.player != null) mc.player.sendOverlayMessage(Component.literal(text));
 	}
 }
