@@ -207,7 +207,7 @@ public final class XashHudExtras {
 				vanilla.extractRenderState(g, delta);
 				return;
 			}
-			if (style == 3 || !mc.options.getCameraType().isFirstPerson() || mc.options.hideGui) return;
+			if (style == 3 || !mc.options.getCameraType().isFirstPerson()) return; // F1 already skips the whole HUD
 			int cx = g.guiWidth() / 2, cy = g.guiHeight() / 2;
 			int color = XashHud.hudColor();
 			if (style == 2) {

@@ -43,7 +43,8 @@ public final class XashAnim {
 		ItemStack held = p.getMainHandItem();
 		int aim = held.isEmpty() ? 0 : ItemBuckets.isRanged(held) ? 1 : 2;
 		boolean special = p.isFallFlying() || p.isSwimming() || p.isPassenger() || p.isSleeping() || p.isAutoSpinAttack();
-		boolean busy = p.getAttackAnim(partialTick) > 0 || p.isUsingItem();
+		// Let vanilla's swing/use poses play: item use for everyone, the attack key for ourselves.
+		boolean busy = p.isUsingItem() || (self && Minecraft.getInstance().options.keyAttack.isDown());
 		((FabricRenderState) state).setData(KEY, new Data(self, p.onGround(), p.onClimbable() && !p.onGround(),
 				p.isInWater() || p.isInLava(), special, aim, busy, (float) (p.getY() * 2.6)));
 	}
