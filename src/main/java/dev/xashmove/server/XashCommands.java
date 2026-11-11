@@ -59,7 +59,6 @@ public final class XashCommands {
 								.then(argument("value", StringArgumentType.greedyString())
 										.executes(ctx -> set(ctx, StringArgumentType.getString(ctx, "cvar"), StringArgumentType.getString(ctx, "value"))))))
 				.then(literal("reset").requires(admin)
-						.then(literal("all").executes(XashCommands::resetAll))
 						.then(argument("cvar", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(names(), b))
 								.executes(ctx -> reset(ctx, StringArgumentType.getString(ctx, "cvar")))))
 				.then(literal("preset").requires(admin)
@@ -78,6 +77,7 @@ public final class XashCommands {
 
 	private static List<String> names() {
 		List<String> out = new ArrayList<>();
+		out.add("all");
 		for (Cvar c : Cvars.all()) {
 			if (c.scope != Cvar.Scope.CLIENT) out.add(c.name);
 		}
@@ -128,6 +128,7 @@ public final class XashCommands {
 	}
 
 	private static int reset(CommandContext<CommandSourceStack> ctx, String name) {
+		if (name.equalsIgnoreCase("all")) return resetAll(ctx);
 		Cvar c = Cvars.get(name);
 		if (c == null || c.scope == Cvar.Scope.CLIENT) return fail(ctx, "Unknown server cvar '" + name + "'");
 		XashServer.config().reset(c);

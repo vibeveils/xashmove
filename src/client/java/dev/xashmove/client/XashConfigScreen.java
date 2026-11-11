@@ -243,7 +243,7 @@ public final class XashConfigScreen extends Screen {
 
 	@Override
 	public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-		this.extractBackground(graphics, mouseX, mouseY, delta);
+		// super already draws the (blurred) background in 26.3; drawing it again crashes ("Can only blur once per frame")
 		super.extractRenderState(graphics, mouseX, mouseY, delta);
 		String header = "Xash Movement - mode: " + ClientState.modeDescription();
 		graphics.centeredText(this.font, header, this.width / 2, 8, TEXT_COLORS[0]);

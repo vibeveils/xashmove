@@ -46,12 +46,6 @@ public final class XashClientCommands {
 						.then(argument("cvar", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(names(), b))
 								.executes(ctx -> toggle(ctx, StringArgumentType.getString(ctx, "cvar")))))
 				.then(literal("reset")
-						.then(literal("all").executes(ctx -> {
-							ClientState.config().resetAll();
-							ClientState.changed();
-							ok(ctx, "All client cvars reset");
-							return 1;
-						}))
 						.then(argument("cvar", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(names(), b))
 								.executes(ctx -> reset(ctx, StringArgumentType.getString(ctx, "cvar")))))
 				.then(literal("preset")
@@ -74,6 +68,7 @@ public final class XashClientCommands {
 
 	private static List<String> names() {
 		List<String> out = new ArrayList<>();
+		out.add("all");
 		for (Cvar c : Cvars.all()) {
 			if (ClientState.config().owns(c)) out.add(c.name);
 		}
@@ -138,6 +133,12 @@ public final class XashClientCommands {
 	}
 
 	private static int reset(CommandContext<FabricClientCommandSource> ctx, String name) {
+		if (name.equalsIgnoreCase("all")) {
+			ClientState.config().resetAll();
+			ClientState.changed();
+			ok(ctx, "All client cvars reset");
+			return 1;
+		}
 		Cvar c = find(name);
 		if (c == null) return fail(ctx, "Unknown client cvar '" + name + "'");
 		ClientState.config().reset(c);
@@ -147,7 +148,17 @@ public final class XashClientCommands {
 	}
 
 	private static int preset(CommandContext<FabricClientCommandSource> ctx, String name) {
-		if (!ClientState.config().applyPreset(name.toLowerCase(Locale.ROOT))) {
+		String key = name.toLowerCase(Locale.ROOT);
+		net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+		net.minecraft.client.server.IntegratedServer sp = mc.getSingleplayerServer();
+		if (mc.hasSingleplayerServer() && sp != null && Cvars.presets().containsKey(key)) {
+			ClientState.config().applyPreset(key); // keep the local profile in step too
+			ClientState.changed();
+			sp.execute(() -> dev.xashmove.server.XashServer.applyPreset(key));
+			ok(ctx, "Applied preset " + key + " to this world (and your local profile)");
+			return 1;
+		}
+		if (!ClientState.config().applyPreset(key)) {
 			return fail(ctx, "Unknown preset. Available: " + String.join(", ", Cvars.presets().keySet()));
 		}
 		ClientState.changed();
