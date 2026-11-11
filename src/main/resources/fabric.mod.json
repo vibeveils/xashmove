@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "xashmove",
+	"version": "${version}",
+	"name": "Xash Movement",
+	"description": "GoldSrc / Xash3D FWGS player movement for Minecraft: ground & air acceleration, air strafing, bunny hopping, edge friction, duck-jumping, long jump, HL ladders and swimming, cvar-style console config. Works client-only on vanilla servers (vanilla-friendly mode) or as a full 'pure Xash' server.",
+	"authors": ["Xash Movement contributors"],
+	"contact": {
+		"sources": "https://github.com/FWGS/xash3d-fwgs"
+	},
+	"license": "LicenseRef-XashMovement",
+	"icon": "assets/xashmove/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": ["dev.xashmove.XashMove"],
+		"client": ["dev.xashmove.client.XashMoveClient"]
+	},
+	"mixins": [
+		"xashmove.mixins.json",
+		{
+			"config": "xashmove.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

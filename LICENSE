@@ -1,0 +1,19 @@
+Xash Movement - licensing notice
+
+Original code in this repository (networking, cvar system, HUD, commands, mixins,
+Minecraft integration) is released under the MIT License:
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy of
+  this software to deal in it without restriction, including the rights to use,
+  copy, modify, merge, publish, distribute, sublicense and/or sell copies, subject
+  to this notice being included. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT
+  WARRANTY OF ANY KIND.
+
+The player-movement maths in src/main/java/dev/xashmove/physics/PmCore.java and
+XashPhysics.java is a port of pm_shared.c from the Half-Life 1 SDK as shipped in
+FWGS hlsdk-portable (the game code Xash3D FWGS runs). That file is
+"Copyright (c) 1996-2002, Valve LLC" and its header restricts use to
+non-commercial enhancements to Valve products; the HL1 SDK licence allows free,
+non-commercial distribution only. Most of the same algorithms (accelerate,
+airaccelerate, friction, stopspeed) originate in id Software's QuakeWorld pmove.c,
+which is GPL-2.0. Review these terms before publishing this mod publicly.

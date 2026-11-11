@@ -1,0 +1,8 @@
+{
+	"key.category.xashmove.main": "Xash Movement",
+	"key.xashmove.toggle": "Toggle Xash movement",
+	"key.xashmove.speedometer": "Toggle speedometer",
+	"key.xashmove.preset": "Cycle movement preset",
+	"key.xashmove.hlhud": "Toggle HL-style HUD",
+	"xashmove.kick.required": "This server runs pure Xash movement. Install the Xash Movement mod (Fabric, 26.3) to join."
+}
