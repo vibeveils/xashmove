@@ -1,5 +1,6 @@
 package dev.xashmove;
 
+import dev.xashmove.combat.CombatVars;
 import dev.xashmove.physics.MoveVars;
 
 /**
@@ -8,6 +9,7 @@ import dev.xashmove.physics.MoveVars;
  */
 public final class XashRuntime {
 	private static volatile MoveVars clientVars;
+	private static volatile CombatVars clientCombat;
 
 	private XashRuntime() {
 	}
@@ -23,5 +25,14 @@ public final class XashRuntime {
 
 	public static void setClientVars(MoveVars vars) {
 		clientVars = vars;
+	}
+
+	/** Combat values synced from a modded server, or null when connected to a vanilla server. */
+	public static CombatVars clientCombat() {
+		return clientCombat;
+	}
+
+	public static void setClientCombat(CombatVars combat) {
+		clientCombat = combat;
 	}
 }

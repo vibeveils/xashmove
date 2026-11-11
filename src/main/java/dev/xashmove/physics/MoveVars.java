@@ -36,6 +36,8 @@ public final class MoveVars {
 	public final double iceAccelMin;
 	/** Horizontal speed cap in u/s, or 0 for none. */
 	public final double hardSpeedCap;
+	/** 1 = vanilla 20% speed while using items, 0 = full speed. */
+	public final double itemUseSlowdown;
 	// client side input
 	public final double forwardSpeed, backSpeed, sideSpeed, upSpeed;
 
@@ -68,6 +70,7 @@ public final class MoveVars {
 		respectAttributes = sv.bool(Cvars.SV_RESPECT_ATTRIBUTES);
 		blockFriction = sv.bool(Cvars.SV_BLOCK_FRICTION);
 		iceAccelMin = sv.get(Cvars.SV_ICE_ACCEL_MIN);
+		itemUseSlowdown = sv.get(Cvars.SV_ITEM_USE_SLOWDOWN);
 
 		boolean svAutoHop = sv.bool(Cvars.SV_AUTOBUNNYHOP);
 		autoBhop = svAutoHop && (cl == null || cl.bool(Cvars.CL_AUTOBUNNYHOP));

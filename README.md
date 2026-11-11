@@ -46,15 +46,66 @@ Drop the jar plus Fabric API into `mods/` on the client, and also on the server 
 
 | Key | Action |
 |---|---|
+| O | **Options screen**: every cvar by category, plus styles and presets (also `/xashc menu`) |
 | J | Toggle Xash movement (`cl_xash`) |
 | K | Toggle speedometer |
 | H | Toggle HL-style HUD |
 | U | Cycle preset. In singleplayer it changes the world's server config; on vanilla servers it changes your local profile |
+| Z | Zoom (HL crossbow secondary fire), hold or toggle (`cl_zoom_mode`) |
+| G | `lastinv`: switch back to the previous weapon |
+| 1-5 | With `cl_weapon_switch hl`: HL weapon buckets (press again to cycle; `hud_fastswitch 0` confirms with attack) |
 
 Movement keys work like in Half-Life: W/A/S/D map to `+forward/+moveleft/...`, sneak is `+duck` and space is `+jump`.
 Sprint is disabled by default (`sv_sprint disabled`, as in HL). Set `sv_sprint multiplier` to make sprint scale your maxspeed.
 Minecraft can't bind the scroll wheel to jump, so the default is hold-to-hop (`sv_autobunnyhop 1`). For HL-authentic
 re-press timing use preset `hl1`, or set `sv_autobunnyhop 0` and optionally `sv_jump_buffer 50`.
+
+## Beyond movement
+
+**Weapon switching (`cl_weapon_switch hl`).** Number keys 1-5 open HL's bucket menu instead of picking hotbar slots:
+1 melee, 2 ranged, 3 tools, 4 consumables and other items, 5 blocks. Pressing the same number again cycles inside the
+bucket. `hud_fastswitch 0` gives the classic "highlight, then click to confirm" behaviour. `G` is `lastinv`. The scroll
+wheel still works and pops the menu up. Keys 6-9 keep their vanilla meaning. Only hotbar items count, because that's all
+a server lets a client select.
+
+**HUD.** HL crosshair (`hud_crosshair hl|dot|none`), ammo counter (loaded bolt plus arrow count for crossbows, arrows for
+bows, durability or stack size for everything else), pickup history, damage flash, HL health/armor numbers, `cl_showfps`,
+a small `net_graph` (fps, ping, speed, mode), the speedometer, and `hud_color` for the HL amber or any other colour.
+
+**View.** HL `V_CalcBob` view bob (`cl_bob_style hl`, `cl_bob`, `cl_bobcycle`, `cl_bobup`), strafe roll, landing and
+long-jump punch, and zoom.
+
+**Bows and crossbows.** These are server rules, synced to modded clients so charge animations match:
+`sv_bow_draw_time` (0 = instant full power), `sv_bow_velocity`, `sv_crossbow_charge_time`, `sv_crossbow_velocity`,
+`sv_crossbow_autoload` (HL-style auto-reload from your arrows), `sv_item_use_slowdown 0` (full speed while drawing,
+eating or blocking), and `sv_attack_cooldown none` (HL crowbar spam). Arrow damage in Minecraft scales with arrow speed,
+so faster arrows also hit harder. `combat_hl` is a ready-made set. They work in `vanilla` and `pure` server modes;
+`sv_combat 0` turns them all off. On a server without the mod, combat is always vanilla.
+
+**GoldSrc-style player animations (`cl_anim goldsrc`).** These run on the normal Minecraft player model, for you and,
+with `cl_anim_others`, for everyone you see:
+- weapons held up in an aim pose that follows look pitch (two-handed for bows, crossbows and tridents; one-handed for others with `cl_anim_aim all`);
+- HL's tucked-legs jump/fall pose;
+- hand-over-hand ladder climbing driven by height;
+- a longer running stride with little arm swing.
+
+`cl_anim_strength` blends between vanilla (0) and GoldSrc (1). It's purely visual and local.
+
+I didn't include an actual Half-Life player model. Valve's models (Gordon, the scientists and so on) are copyrighted
+assets, and rendering `.mdl` files would mean writing a whole GoldSrc model renderer. The animations above give the
+GoldSrc feel on the skin you already use.
+
+**Other Xash/HL details.** `sv_falldamage_mode fixed` works like `mp_falldamage 0` (a flat 10 HP), HL fall damage
+scaling, `sv_no_hunger`, and the long jump module.
+
+## Options screen
+
+Press **O**. There are tabs for Style, General, Movement, Combat, Weapons, HUD, View, Animation and Server. Toggles and
+choices cycle when clicked; numbers have -/+ buttons; hover any option to see its description, default and range. Where
+server cvars are saved depends on where you are:
+- **singleplayer**: they edit the world's server config;
+- **server without the mod**: they edit your local profile;
+- **modded server**: they're read-only, and the admin changes them with `/xash`.
 
 ## Commands
 
@@ -67,7 +118,7 @@ Server console (`/xash`; read-only parts work for everyone, changes need permiss
 /xash get sv_airaccelerate     value, default, range, help
 /xash set sv_airaccelerate 100 change; synced to all clients instantly
 /xash reset <cvar|all>
-/xash preset <hl1|xash|quake|cs16|kz|bhop|surf|vanilla_safe>
+/xash preset <hl1|xash|quake|cs16|kz|bhop|surf|vanilla_safe|combat_vanilla|combat_hl|full_xash|mostly_minecraft>
 /xash mode <off|vanilla|pure>
 /xash reload                   re-read config/xashmove-server.json
 ```
@@ -77,6 +128,8 @@ Client console (`/xashc`) edits `cl_*`/`hud_*` and your **local profile** of `sv
 ```
 /xashc                         status (mode + whether the server has the mod)
 /xashc list [filter] | get | set | toggle | reset | preset | reload
+/xashc style <vanilla|movement|classic|full>
+/xashc menu                    open the options screen
 /xashc set hud_speedometer_units kmh
 /xashc preset kz
 ```
@@ -130,6 +183,13 @@ updates view angles every frame, which is what makes air strafing feel right.
 | `sv_block_friction` | 1 | 0/1 | Ice/slime/soul sand change friction and speed |
 | `sv_ice_accel_min` | 0.25 | 0 .. 1 | Minimum ground acceleration fraction on slippery blocks |
 | `sv_vf_max_hspeed` | 10 | 1 .. 100 | vanilla mode: hard horizontal speed cap in blocks/s so anti-cheat never trips |
+| `sv_item_use_slowdown` | 1 | 0 .. 1 | Slowdown while drawing a bow / eating / blocking: 1 = vanilla (20% speed), 0 = HL (full speed while aiming) |
+| `sv_bow_draw_time` | 1 | 0 .. 5 | Seconds to fully draw a bow (vanilla 1, 0 = instant full power) |
+| `sv_bow_velocity` | 1 | 0.1 .. 5 | Arrow speed multiplier for bows (arrow damage scales with speed too) |
+| `sv_crossbow_charge_time` | 1.25 | 0.05 .. 5 | Seconds to load a crossbow (vanilla 1.25; Quick Charge still applies on top) |
+| `sv_crossbow_velocity` | 1 | 0.1 .. 5 | Bolt speed multiplier for crossbows; damage scales with speed (HL bolts fly ~2.5x faster) |
+| `sv_crossbow_autoload` | 0 | 0/1 | HL-style auto reload: a fired crossbow reloads itself after sv_crossbow_charge_time if you carry arrows |
+| `sv_attack_cooldown` | vanilla | vanilla|none | vanilla = 1.9 attack cooldown, none = HL crowbar-spam (full damage every swing) |
 
 #### Server rules (pure mode, never sent to clients)
 
@@ -141,6 +201,8 @@ updates view angles every frame, which is what makes air strafing feel right.
 | `sv_hl_falldamage` | 1 | 0/1 | pure mode: GoldSrc fall damage (safe below 580 u/s impact, lethal at 1024 u/s) |
 | `sv_falldamage_scale` | 1 | 0 .. 10 | pure mode: multiplier on HL fall damage |
 | `sv_no_hunger` | 0 | 0/1 | pure mode: no food exhaustion (Half-Life has no hunger) |
+| `sv_falldamage_mode` | realistic | realistic|fixed | pure mode, like mp_falldamage: realistic = scales with impact speed, fixed = flat 10 HP whenever HL would hurt |
+| `sv_combat` | 1 | 0/1 | Apply the sv_bow_* / sv_crossbow_* / sv_attack_cooldown combat cvars (any mode except off) |
 
 #### Client preferences
 
@@ -166,6 +228,33 @@ updates view angles every frame, which is what makes air strafing feel right.
 | `hud_hl` | 0 | 0/1 | Half-Life style health/armor readout |
 | `hud_hl_hide_vanilla` | 0 | 0/1 | Hide vanilla hearts/armor/food while hud_hl is on |
 | `hud_color` | 16752640 | 0 .. 16777215 | HUD colour as RGB, e.g. 0xFFA000 |
+| `hud_crosshair` | vanilla | vanilla|hl|dot|none | Crosshair style |
+| `hud_crosshair_size` | 5 | 2 .. 20 | HL crosshair arm length (gui px) |
+| `hud_ammo` | 0 | 0/1 | HL ammo readout: arrows for bows/crossbows, stack count or durability otherwise |
+| `hud_history` | 0 | 0/1 | HL pickup history on the right side of the screen |
+| `hud_history_time` | 4 | 1 .. 20 | Seconds a pickup stays in the history |
+| `hud_damage_flash` | 0 | 0/1 | Red screen flash when hurt |
+| `cl_showfps` | 0 | 0/1 | Show FPS in the top-right corner (Xash cl_showfps) |
+| `net_graph` | 0 | 0/1 | Show fps / ping / speed / mode block (simplified net_graph) |
+| `cl_weapon_switch` | vanilla | vanilla|hl | Number keys: vanilla = hotbar slots, hl = HL weapon buckets (1 melee, 2 ranged, 3 tools, 4 consumables/misc, 5 blocks) |
+| `hud_fastswitch` | 1 | 0/1 | hl switching: select immediately (1) or open the menu and confirm with attack (0) |
+| `hud_weapon_popup` | 1 | 0/1 | hl switching: show the weapon menu when the slot changes (scroll wheel too) |
+| `cl_weapon_menu_time` | 2.5 | 0.5 .. 10 | Seconds the weapon menu stays open |
+| `cl_bob_style` | vanilla | vanilla|hl|none | View bobbing: vanilla, hl (V_CalcBob up/down bob) or none |
+| `cl_bob` | 0.01 | 0 .. 0.1 | HL bob amount |
+| `cl_bobcycle` | 0.8 | 0.1 .. 2 | HL bob cycle length (s) |
+| `cl_bobup` | 0.5 | 0.05 .. 0.95 | HL bob up-phase fraction |
+| `cl_zoom_fov` | 0.3 | 0.05 .. 1 | Zoom key FOV multiplier (HL crossbow zoom ~0.22) |
+| `cl_zoom_mode` | hold | hold|toggle | Zoom key behaviour |
+| `cl_zoom_items` | ranged | any|ranged | Zoom works with: any item, or only ranged weapons (HL crossbow secondary fire) |
+| `cl_anim` | vanilla | vanilla|goldsrc | Player model animation set |
+| `cl_anim_aim` | ranged | off|ranged|all | goldsrc: hold weapons up in an aim pose that follows look pitch |
+| `cl_anim_jump` | 1 | 0/1 | goldsrc: tucked-legs jump/fall pose |
+| `cl_anim_ladder` | 1 | 0/1 | goldsrc: hand-over-hand ladder climbing |
+| `cl_anim_armswing` | 0.35 | 0 .. 1 | goldsrc: arm swing while running (HL characters barely swing) |
+| `cl_anim_stride` | 1.2 | 0.5 .. 2 | goldsrc: leg stride multiplier |
+| `cl_anim_strength` | 1 | 0 .. 1 | Blend between vanilla (0) and goldsrc (1) poses |
+| `cl_anim_others` | 1 | 0/1 | Apply goldsrc animations to other players too (purely visual, local) |
 
 #### Presets
 
@@ -177,7 +266,22 @@ updates view angles every frame, which is what makes air strafing feel right.
 - **bhop**: `sv_airaccelerate 100`, `sv_maxvelocity 3500`, `sv_bunnyhop_cap off`
 - **surf**: `sv_airaccelerate 150`, `sv_maxvelocity 3500`, `sv_airspeedcap 60`, `sv_bunnyhop_cap off`, `sv_longjump 1`
 - **vanilla_safe**: `sv_maxspeed 230`, `sv_bunnyhop_cap clamp`, `sv_bunnyhop_factor 1.3`
+- **combat_vanilla**: all defaults
+- **combat_hl**: `sv_item_use_slowdown 0`, `sv_bow_draw_time 0.35`, `sv_bow_velocity 1.5`, `sv_crossbow_charge_time 0.6`, `sv_crossbow_velocity 2.5`, `sv_crossbow_autoload 1`, `sv_attack_cooldown none`
+- **full_xash**: `sv_longjump 1`, `sv_item_use_slowdown 0`, `sv_bow_draw_time 0.35`, `sv_bow_velocity 1.5`, `sv_crossbow_charge_time 0.6`, `sv_crossbow_velocity 2.5`, `sv_crossbow_autoload 1`, `sv_attack_cooldown none`
+- **mostly_minecraft**: `sv_maxspeed 230`, `sv_bunnyhop_cap clamp`, `sv_bunnyhop_factor 1.3`
 
+
+#### Client styles (`/xashc style <name>`, or the Style tab of the options screen)
+
+How much Minecraft vs. how much Xash, for everything on your side. A style resets all look-and-feel cvars, but not your input speeds or `hud_color`.
+
+- **vanilla**: pure Minecraft. Xash movement off and no HL effects.
+- **movement**: Xash movement only, with Minecraft's look and feel.
+- **classic**: movement plus HL view bob, HL crosshair, ammo counter and GoldSrc animations.
+- **full**: everything above plus HL weapon buckets, the HL health/armor HUD (vanilla bars hidden), pickup history, damage flash and `net_graph`.
+
+The server side has a matching scale: `/xash preset mostly_minecraft` up to `/xash preset full_xash`. You can also mix one movement preset with `combat_vanilla` or `combat_hl`.
 
 ## How it works
 
@@ -199,10 +303,16 @@ should be confirmed on first `./gradlew build` / launch:
 - Compile-time: `LivingEntity.getJumpBoostPower()`, `Entity.getBlockSpeedFactor()/getBlockJumpFactor()`,
   `Entity.stuckSpeedMultiplier`, `MobEffects.SLOW_FALLING/LEVITATION`,
   `Attributes.GRAVITY/JUMP_STRENGTH`, `GuiGraphicsExtractor.text/centeredText`.
+- New in this version (compile-time): `Player.getProjectile`, `ChargedProjectiles.of(ItemStack)` and
+  `DataComponents.CHARGED_PROJECTILES` (crossbow auto-reload), `net.minecraft.world.entity.projectile.Projectile`
+  (arrow tuning), `Inventory.getContainerSize`, `Player.containerMenu.getCarried()`, `Minecraft.getFps()`,
+  `ClientPacketListener.getPlayerInfo`, `HumanoidModel.head/rightArm/...` fields, `Screen.clearWidgets`.
 - Mixin targets marked `require = 0` switch off quietly if they're renamed (check the log for Mixin warnings):
   `maxUpStep`, `calculateFallDamage`, `jumpInLiquid`, `goDownInWater`, `Player.maybeBackOffFromEdge`,
   `Player.causeFoodExhaustion`, `ServerGamePacketListenerImpl.shouldCheckPlayerMovement`, `GameRenderer.bobHurt`
-  (view roll/punch). `travel` and `jumpFromGround` are required.
+  (view roll/punch), `GameRenderer.bobView` (HL bob), `GameRenderer.getFov` (zoom), `BowItem.getPowerForTime`,
+  `CrossbowItem.getChargeDuration`, `LivingEntityRenderer.extractRenderState` and `HumanoidModel.setupAnim`
+  (animations; all client-side ones are `require = 0`). `travel` and `jumpFromGround` are required.
 
 ## Licence
 

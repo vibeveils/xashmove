@@ -57,6 +57,13 @@ public final class XashClientCommands {
 				.then(literal("preset")
 						.then(argument("name", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(Cvars.presets().keySet(), b))
 								.executes(ctx -> preset(ctx, StringArgumentType.getString(ctx, "name")))))
+				.then(literal("menu").executes(ctx -> {
+					XashMoveClient.requestMenu();
+					return 1;
+				}))
+				.then(literal("style")
+						.then(argument("name", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(Cvars.styles().keySet(), b))
+								.executes(ctx -> style(ctx, StringArgumentType.getString(ctx, "name")))))
 				.then(literal("reload").executes(ctx -> {
 					ClientState.config().load();
 					ClientState.changed();
@@ -145,6 +152,15 @@ public final class XashClientCommands {
 		}
 		ClientState.changed();
 		ok(ctx, "Local profile set to preset " + name + (ClientState.serverInfo() != null ? " (used on vanilla servers; this server sets its own)" : ""));
+		return 1;
+	}
+
+	private static int style(CommandContext<FabricClientCommandSource> ctx, String name) {
+		if (!ClientState.config().applyStyle(name.toLowerCase(Locale.ROOT))) {
+			return fail(ctx, "Unknown style. Available: " + String.join(", ", Cvars.styles().keySet()));
+		}
+		ClientState.changed();
+		ok(ctx, "Client style: " + name + " (fine-tune with /xashc menu)");
 		return 1;
 	}
 

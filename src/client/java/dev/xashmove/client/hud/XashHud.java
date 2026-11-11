@@ -36,6 +36,10 @@ public final class XashHud {
 		HudElementRegistry.addLast(XashMove.id("hl_hud"), XashHud::hlHud);
 		HudElementRegistry.addLast(XashMove.id("mode_tag"), XashHud::modeTag);
 
+		HudElementRegistry.addLast(XashMove.id("hl_extras"), XashHudExtras::render);
+		HudElementRegistry.attachElementBefore(VanillaHudElements.CROSSHAIR, XashMove.id("damage_flash"), XashHudExtras::damageFlash);
+		HudElementRegistry.replaceElement(VanillaHudElements.CROSSHAIR, XashHudExtras::crosshair);
+
 		HudElementRegistry.replaceElement(VanillaHudElements.HEALTH_BAR, XashHud::hideWhenHl);
 		HudElementRegistry.replaceElement(VanillaHudElements.ARMOR_BAR, XashHud::hideWhenHl);
 		HudElementRegistry.replaceElement(VanillaHudElements.FOOD_BAR, XashHud::hideWhenHl);
@@ -49,11 +53,11 @@ public final class XashHud {
 		};
 	}
 
-	private static int hudColor() {
+	static int hudColor() {
 		return 0xFF000000 | (ClientState.config().integer(Cvars.HUD_COLOR) & 0xFFFFFF);
 	}
 
-	private static double unitsPerBlock() {
+	static double unitsPerBlock() {
 		MoveVars v = XashRuntime.clientVars();
 		return v != null ? v.unitsPerBlock : Cvars.SV_UNITS_PER_BLOCK.def;
 	}
@@ -93,7 +97,7 @@ public final class XashHud {
 		g.pose().popMatrix();
 	}
 
-	private static String format(double ups, double upb, int units) {
+	static String format(double ups, double upb, int units) {
 		return switch (units) {
 			case 1 -> String.format(Locale.ROOT, "%.2f b/s", ups / upb);
 			case 2 -> String.format(Locale.ROOT, "%.1f km/h", ups / upb * 3.6);

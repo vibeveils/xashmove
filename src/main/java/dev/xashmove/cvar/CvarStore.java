@@ -77,6 +77,17 @@ public final class CvarStore {
 		return true;
 	}
 
+	/** Applies a client style (only cvars this store owns). */
+	public boolean applyStyle(String name) {
+		Map<String, Double> p = Cvars.styles().get(name);
+		if (p == null) return false;
+		p.forEach((k, v) -> {
+			Cvar c = Cvars.get(k);
+			if (owns(c)) values.put(c.name, c.clamp(v));
+		});
+		return true;
+	}
+
 	/** Snapshot of the SERVER-scope (synced) movevars. */
 	public Map<String, Double> movevars() {
 		Map<String, Double> out = new LinkedHashMap<>();

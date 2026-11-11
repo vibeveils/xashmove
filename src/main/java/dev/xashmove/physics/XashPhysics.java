@@ -110,8 +110,13 @@ public final class XashPhysics {
 			this.dt = 0.05 / Math.max(1, v.substeps);
 			this.msec = dt * 1000.0;
 			// LivingEntity.aiStep scales raw input by 0.98 before travel(); undo that so a full key press is 1.0.
-			this.forwardIn = clampUnit(input.z / 0.98);
-			this.leftIn = clampUnit(input.x / 0.98);
+			// Using an item (bow, food, shield) scales input by 0.2 in LocalPlayer; re-scale to sv_item_use_slowdown.
+			double use = 1.0;
+			if (p.isUsingItem() && !p.isPassenger() && v.itemUseSlowdown < 1.0) {
+				use = (1.0 - v.itemUseSlowdown * 0.8) / 0.2;
+			}
+			this.forwardIn = clampUnit(input.z / 0.98 * use);
+			this.leftIn = clampUnit(input.x / 0.98 * use);
 
 			Vec3 dm = p.getDeltaMovement();
 			vel[0] = v.toUnitsPerSecond(dm.x);

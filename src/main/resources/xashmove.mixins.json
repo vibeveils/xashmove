@@ -3,6 +3,8 @@
 	"package": "dev.xashmove.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
+		"BowItemMixin",
+		"CrossbowItemMixin",
 		"LivingEntityMixin",
 		"PlayerMixin",
 		"ServerGamePacketListenerImplMixin"

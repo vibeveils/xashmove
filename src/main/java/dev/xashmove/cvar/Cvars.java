@@ -16,6 +16,7 @@ import dev.xashmove.cvar.Cvar.Type;
 public final class Cvars {
 	private static final Map<String, Cvar> ALL = new LinkedHashMap<>();
 	private static final Map<String, Map<String, Double>> PRESETS = new LinkedHashMap<>();
+	private static final Map<String, Map<String, Double>> STYLES = new LinkedHashMap<>();
 
 	private static Cvar f(String n, Scope s, double d, double min, double max, String desc) {
 		return reg(new Cvar(n, Type.FLOAT, s, d, min, max, desc));
@@ -51,6 +52,10 @@ public final class Cvars {
 			"pure mode: multiplier on HL fall damage");
 	public static final Cvar SV_NO_HUNGER = b("sv_no_hunger", Scope.SERVER_ONLY, false,
 			"pure mode: no food exhaustion (Half-Life has no hunger)");
+	public static final Cvar SV_FALLDAMAGE_MODE = e("sv_falldamage_mode", Scope.SERVER_ONLY, 0,
+			"pure mode, like mp_falldamage: realistic = scales with impact speed, fixed = flat 10 HP whenever HL would hurt", "realistic", "fixed");
+	public static final Cvar SV_COMBAT = b("sv_combat", Scope.SERVER_ONLY, true,
+			"Apply the sv_bow_* / sv_crossbow_* / sv_attack_cooldown combat cvars (any mode except off)");
 
 	// ---------------------------------------------------------------- movevars (synced to clients)
 	public static final Cvar SV_UNITS_PER_BLOCK = f("sv_units_per_block", Scope.SERVER, 40, 8, 128,
@@ -93,6 +98,16 @@ public final class Cvars {
 	public static final Cvar SV_VF_MAX_HSPEED = f("sv_vf_max_hspeed", Scope.SERVER, 10, 1, 100,
 			"vanilla mode: hard horizontal speed cap in blocks/s so anti-cheat never trips");
 
+	// ---------------------------------------------------------------- combat (synced; defaults = vanilla)
+	public static final Cvar SV_ITEM_USE_SLOWDOWN = f("sv_item_use_slowdown", Scope.SERVER, 1, 0, 1,
+			"Slowdown while drawing a bow / eating / blocking: 1 = vanilla (20% speed), 0 = HL (full speed while aiming)");
+	public static final Cvar SV_BOW_DRAW_TIME = f("sv_bow_draw_time", Scope.SERVER, 1, 0, 5, "Seconds to fully draw a bow (vanilla 1, 0 = instant full power)");
+	public static final Cvar SV_BOW_VELOCITY = f("sv_bow_velocity", Scope.SERVER, 1, 0.1, 5, "Arrow speed multiplier for bows (arrow damage scales with speed too)");
+	public static final Cvar SV_CROSSBOW_CHARGE_TIME = f("sv_crossbow_charge_time", Scope.SERVER, 1.25, 0.05, 5, "Seconds to load a crossbow (vanilla 1.25; Quick Charge still applies on top)");
+	public static final Cvar SV_CROSSBOW_VELOCITY = f("sv_crossbow_velocity", Scope.SERVER, 1, 0.1, 5, "Bolt speed multiplier for crossbows; damage scales with speed (HL bolts fly ~2.5x faster)");
+	public static final Cvar SV_CROSSBOW_AUTOLOAD = b("sv_crossbow_autoload", Scope.SERVER, false, "HL-style auto reload: a fired crossbow reloads itself after sv_crossbow_charge_time if you carry arrows");
+	public static final Cvar SV_ATTACK_COOLDOWN = e("sv_attack_cooldown", Scope.SERVER, 0, "vanilla = 1.9 attack cooldown, none = HL crowbar-spam (full damage every swing)", "vanilla", "none");
+
 	// ---------------------------------------------------------------- client
 	public static final Cvar CL_XASH = b("cl_xash", Scope.CLIENT, true, "Master switch for Xash movement on this client");
 	public static final Cvar CL_XASH_VANILLA_SERVERS = b("cl_xash_vanilla_servers", Scope.CLIENT, true,
@@ -115,6 +130,40 @@ public final class Cvars {
 	public static final Cvar HUD_HL = b("hud_hl", Scope.CLIENT, false, "Half-Life style health/armor readout");
 	public static final Cvar HUD_HL_HIDE_VANILLA = b("hud_hl_hide_vanilla", Scope.CLIENT, false, "Hide vanilla hearts/armor/food while hud_hl is on");
 	public static final Cvar HUD_COLOR = i("hud_color", Scope.CLIENT, 0xFFA000, 0, 0xFFFFFF, "HUD colour as RGB, e.g. 0xFFA000");
+	public static final Cvar HUD_CROSSHAIR = e("hud_crosshair", Scope.CLIENT, 0, "Crosshair style", "vanilla", "hl", "dot", "none");
+	public static final Cvar HUD_CROSSHAIR_SIZE = i("hud_crosshair_size", Scope.CLIENT, 5, 2, 20, "HL crosshair arm length (gui px)");
+	public static final Cvar HUD_AMMO = b("hud_ammo", Scope.CLIENT, false, "HL ammo readout: arrows for bows/crossbows, stack count or durability otherwise");
+	public static final Cvar HUD_HISTORY = b("hud_history", Scope.CLIENT, false, "HL pickup history on the right side of the screen");
+	public static final Cvar HUD_HISTORY_TIME = f("hud_history_time", Scope.CLIENT, 4, 1, 20, "Seconds a pickup stays in the history");
+	public static final Cvar HUD_DAMAGE_FLASH = b("hud_damage_flash", Scope.CLIENT, false, "Red screen flash when hurt");
+	public static final Cvar HUD_SHOWFPS = b("cl_showfps", Scope.CLIENT, false, "Show FPS in the top-right corner (Xash cl_showfps)");
+	public static final Cvar HUD_NETGRAPH = b("net_graph", Scope.CLIENT, false, "Show fps / ping / speed / mode block (simplified net_graph)");
+
+	// weapons
+	public static final Cvar CL_WEAPON_SWITCH = e("cl_weapon_switch", Scope.CLIENT, 0,
+			"Number keys: vanilla = hotbar slots, hl = HL weapon buckets (1 melee, 2 ranged, 3 tools, 4 consumables/misc, 5 blocks)", "vanilla", "hl");
+	public static final Cvar HUD_FASTSWITCH = b("hud_fastswitch", Scope.CLIENT, true, "hl switching: select immediately (1) or open the menu and confirm with attack (0)");
+	public static final Cvar HUD_WEAPON_POPUP = b("hud_weapon_popup", Scope.CLIENT, true, "hl switching: show the weapon menu when the slot changes (scroll wheel too)");
+	public static final Cvar CL_WEAPON_MENU_TIME = f("cl_weapon_menu_time", Scope.CLIENT, 2.5, 0.5, 10, "Seconds the weapon menu stays open");
+
+	// view
+	public static final Cvar CL_BOB_STYLE = e("cl_bob_style", Scope.CLIENT, 0, "View bobbing: vanilla, hl (V_CalcBob up/down bob) or none", "vanilla", "hl", "none");
+	public static final Cvar CL_BOB = f("cl_bob", Scope.CLIENT, 0.01, 0, 0.1, "HL bob amount");
+	public static final Cvar CL_BOBCYCLE = f("cl_bobcycle", Scope.CLIENT, 0.8, 0.1, 2, "HL bob cycle length (s)");
+	public static final Cvar CL_BOBUP = f("cl_bobup", Scope.CLIENT, 0.5, 0.05, 0.95, "HL bob up-phase fraction");
+	public static final Cvar CL_ZOOM_FOV = f("cl_zoom_fov", Scope.CLIENT, 0.3, 0.05, 1, "Zoom key FOV multiplier (HL crossbow zoom ~0.22)");
+	public static final Cvar CL_ZOOM_MODE = e("cl_zoom_mode", Scope.CLIENT, 0, "Zoom key behaviour", "hold", "toggle");
+	public static final Cvar CL_ZOOM_ITEMS = e("cl_zoom_items", Scope.CLIENT, 1, "Zoom works with: any item, or only ranged weapons (HL crossbow secondary fire)", "any", "ranged");
+
+	// animation
+	public static final Cvar CL_ANIM = e("cl_anim", Scope.CLIENT, 0, "Player model animation set", "vanilla", "goldsrc");
+	public static final Cvar CL_ANIM_AIM = e("cl_anim_aim", Scope.CLIENT, 1, "goldsrc: hold weapons up in an aim pose that follows look pitch", "off", "ranged", "all");
+	public static final Cvar CL_ANIM_JUMP = b("cl_anim_jump", Scope.CLIENT, true, "goldsrc: tucked-legs jump/fall pose");
+	public static final Cvar CL_ANIM_LADDER = b("cl_anim_ladder", Scope.CLIENT, true, "goldsrc: hand-over-hand ladder climbing");
+	public static final Cvar CL_ANIM_ARMSWING = f("cl_anim_armswing", Scope.CLIENT, 0.35, 0, 1, "goldsrc: arm swing while running (HL characters barely swing)");
+	public static final Cvar CL_ANIM_STRIDE = f("cl_anim_stride", Scope.CLIENT, 1.2, 0.5, 2, "goldsrc: leg stride multiplier");
+	public static final Cvar CL_ANIM_STRENGTH = f("cl_anim_strength", Scope.CLIENT, 1, 0, 1, "Blend between vanilla (0) and goldsrc (1) poses");
+	public static final Cvar CL_ANIM_OTHERS = b("cl_anim_others", Scope.CLIENT, true, "Apply goldsrc animations to other players too (purely visual, local)");
 
 	static {
 		// HL1 as shipped on Steam (HLSDK pm_shared defaults, scroll-wheel bhop, PreventMegaBunnyJumping).
@@ -137,12 +186,66 @@ public final class Cvars {
 		// Close to vanilla speeds, safest on strict anti-cheat servers.
 		preset("vanilla_safe", Map.of("sv_maxspeed", 230.0, "sv_bunnyhop_cap", 2.0, "sv_bunnyhop_factor", 1.3,
 				"sv_airaccelerate", 10.0, "sv_longjump", 0.0));
+
+		// Combat presets only touch the combat cvars.
+		combat("combat_vanilla", Map.of());
+		combat("combat_hl", Map.of("sv_item_use_slowdown", 0.0, "sv_bow_draw_time", 0.35, "sv_bow_velocity", 1.5,
+				"sv_crossbow_charge_time", 0.6, "sv_crossbow_velocity", 2.5,
+				"sv_crossbow_autoload", 1.0, "sv_attack_cooldown", 1.0));
+		// Everything at once.
+		Map<String, Double> full = new LinkedHashMap<>(PRESETS.get("xash"));
+		full.putAll(PRESETS.get("combat_hl"));
+		full.put("sv_longjump", 1.0);
+		PRESETS.put("full_xash", full);
+		Map<String, Double> vanillaAll = new LinkedHashMap<>(PRESETS.get("vanilla_safe"));
+		vanillaAll.putAll(PRESETS.get("combat_vanilla"));
+		PRESETS.put("mostly_minecraft", vanillaAll);
+
+		// Client look & feel: how much Minecraft vs Xash.
+		style("vanilla", Map.ofEntries(Map.entry("cl_xash", 0.0), Map.entry("hud_speedometer", 0.0), Map.entry("hud_mode", 0.0),
+				Map.entry("cl_rollangle", 0.0), Map.entry("cl_viewpunch", 0.0)));
+		style("movement", Map.ofEntries(Map.entry("hud_speedometer", 0.0), Map.entry("cl_rollangle", 0.0), Map.entry("cl_viewpunch", 0.0)));
+		style("classic", Map.ofEntries(Map.entry("cl_bob_style", 1.0), Map.entry("hud_crosshair", 1.0), Map.entry("hud_ammo", 1.0),
+				Map.entry("cl_anim", 1.0)));
+		style("full", Map.ofEntries(Map.entry("cl_bob_style", 1.0), Map.entry("hud_crosshair", 1.0), Map.entry("hud_ammo", 1.0),
+				Map.entry("hud_history", 1.0), Map.entry("hud_damage_flash", 1.0), Map.entry("hud_hl", 1.0), Map.entry("hud_hl_hide_vanilla", 1.0),
+				Map.entry("cl_weapon_switch", 1.0), Map.entry("cl_anim", 1.0), Map.entry("cl_anim_aim", 2.0), Map.entry("net_graph", 1.0)));
+	}
+
+	private static boolean isCombat(Cvar c) {
+		return c.scope == Scope.SERVER && "combat".equals(c.category());
+	}
+
+	private static void combat(String name, Map<String, Double> overrides) {
+		Map<String, Double> m = new LinkedHashMap<>();
+		for (Cvar c : ALL.values()) {
+			if (isCombat(c)) m.put(c.name, c.def);
+		}
+		m.putAll(overrides);
+		PRESETS.put(name, m);
+	}
+
+	/** A style resets every look-and-feel client cvar (not input speeds) to default, then applies overrides. */
+	private static void style(String name, Map<String, Double> overrides) {
+		Map<String, Double> m = new LinkedHashMap<>();
+		for (Cvar c : ALL.values()) {
+			if (c.scope == Scope.CLIENT && !c.name.startsWith("cl_forward") && !c.name.startsWith("cl_back")
+					&& !c.name.startsWith("cl_side") && !c.name.startsWith("cl_up") && c != HUD_COLOR) {
+				m.put(c.name, c.def);
+			}
+		}
+		m.putAll(overrides);
+		STYLES.put(name, m);
+	}
+
+	public static Map<String, Map<String, Double>> styles() {
+		return Collections.unmodifiableMap(STYLES);
 	}
 
 	private static void preset(String name, Map<String, Double> overrides) {
 		Map<String, Double> m = new LinkedHashMap<>();
 		for (Cvar c : ALL.values()) {
-			if (c.scope == Scope.SERVER) m.put(c.name, c.def);
+			if (c.scope == Scope.SERVER && !isCombat(c)) m.put(c.name, c.def);
 		}
 		m.putAll(overrides);
 		PRESETS.put(name, m);

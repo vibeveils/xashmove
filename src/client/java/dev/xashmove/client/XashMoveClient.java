@@ -20,6 +20,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import dev.xashmove.Mode;
 import dev.xashmove.XashMove;
 import dev.xashmove.client.hud.XashHud;
+import dev.xashmove.client.hud.XashHudExtras;
 import dev.xashmove.cvar.Cvars;
 import dev.xashmove.net.ServerConfigPayload;
 import dev.xashmove.server.XashServer;
@@ -30,6 +31,10 @@ public final class XashMoveClient implements ClientModInitializer {
 	private static KeyMapping speedometerKey;
 	private static KeyMapping presetKey;
 	private static KeyMapping hlHudKey;
+	private static KeyMapping zoomKey;
+	private static KeyMapping lastInvKey;
+	private static KeyMapping menuKey;
+	private static boolean openMenuNextTick;
 	private static int presetIndex;
 
 	@Override
@@ -40,18 +45,37 @@ public final class XashMoveClient implements ClientModInitializer {
 		speedometerKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.xashmove.speedometer", InputConstants.Type.KEYBOARD, SDLScancode.SDL_SCANCODE_K, CATEGORY));
 		presetKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.xashmove.preset", InputConstants.Type.KEYBOARD, SDLScancode.SDL_SCANCODE_U, CATEGORY));
 		hlHudKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.xashmove.hlhud", InputConstants.Type.KEYBOARD, SDLScancode.SDL_SCANCODE_H, CATEGORY));
+		zoomKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.xashmove.zoom", InputConstants.Type.KEYBOARD, SDLScancode.SDL_SCANCODE_Z, CATEGORY));
+		lastInvKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.xashmove.lastinv", InputConstants.Type.KEYBOARD, SDLScancode.SDL_SCANCODE_G, CATEGORY));
+		menuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping("key.xashmove.menu", InputConstants.Type.KEYBOARD, SDLScancode.SDL_SCANCODE_O, CATEGORY));
 
 		ClientPlayNetworking.registerGlobalReceiver(ServerConfigPayload.TYPE, (payload, context) -> ClientState.onServerConfig(payload));
 		// INIT fires before any play packet is handled, so it can't wipe a config the server already sent.
 		ClientPlayConnectionEvents.INIT.register((listener, client) -> ClientState.onJoin());
 		ClientPlayConnectionEvents.DISCONNECT.register((listener, client) -> ClientState.onDisconnect());
 
+		ClientTickEvents.START_CLIENT_TICK.register(mc -> XashWeapons.startTick(mc, lastInvKey));
 		ClientTickEvents.END_CLIENT_TICK.register(XashMoveClient::tick);
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, buildContext) -> XashClientCommands.register(dispatcher));
 		XashHud.register();
 	}
 
+	/** Opens the options screen on the next tick (commands run while the chat screen is still closing). */
+	public static void requestMenu() {
+		openMenuNextTick = true;
+	}
+
 	private static void tick(Minecraft mc) {
+		XashWeapons.endTick(mc);
+		XashHudExtras.tick(mc);
+		boolean zoomClicked = false;
+		while (zoomKey.consumeClick()) zoomClicked = true;
+		XashView.tickZoom(zoomKey.isDown(), zoomClicked);
+		while (menuKey.consumeClick()) openMenuNextTick = true;
+		if (openMenuNextTick) {
+			openMenuNextTick = false;
+			mc.gui.setScreen(new XashConfigScreen(null));
+		}
 		while (toggleKey.consumeClick()) {
 			boolean on = !ClientState.config().bool(Cvars.CL_XASH);
 			ClientState.config().set(Cvars.CL_XASH, on ? 1 : 0);

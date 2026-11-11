@@ -3,7 +3,9 @@
 	"package": "dev.xashmove.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
-		"GameRendererMixin"
+		"GameRendererMixin",
+		"HumanoidModelMixin",
+		"LivingEntityRendererMixin"
 	],
 	"injectors": {
 		"defaultRequire": 0

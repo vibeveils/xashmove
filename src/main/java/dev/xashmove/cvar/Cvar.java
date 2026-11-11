@@ -38,6 +38,32 @@ public final class Cvar {
 		this.labels = labels;
 	}
 
+	/** Grouping used by the options screen and presets. */
+	public String category() {
+		if (scope == Scope.SERVER_ONLY) return "server";
+		if (name.startsWith("sv_bow") || name.startsWith("sv_crossbow") || name.startsWith("sv_attack") || name.equals("sv_item_use_slowdown")) {
+			return "combat";
+		}
+		if (scope == Scope.SERVER) return "movement";
+		if (name.startsWith("cl_anim")) return "animation";
+		if (name.startsWith("cl_weapon") || name.equals("hud_fastswitch") || name.equals("hud_weapon_popup")) return "weapons";
+		if (name.startsWith("cl_bob") || name.startsWith("cl_roll") || name.startsWith("cl_viewpunch") || name.startsWith("cl_zoom")) return "view";
+		if (name.startsWith("hud_") || name.equals("cl_showfps") || name.equals("net_graph")) return "hud";
+		return "general";
+	}
+
+	/** Step used by the options screen's -/+ buttons. */
+	public double step() {
+		if (type != Type.FLOAT) return 1;
+		double range = max - min;
+		if (range <= 0.11) return 0.005;
+		if (range <= 1.01) return 0.05;
+		if (range <= 10.01) return 0.1;
+		if (range <= 100.01) return 1;
+		if (range <= 1000.01) return 10;
+		return 50;
+	}
+
 	public double clamp(double value) {
 		if (Double.isNaN(value)) return def;
 		double v = Math.max(min, Math.min(max, value));

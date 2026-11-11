@@ -9,6 +9,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import dev.xashmove.Mode;
 import dev.xashmove.XashMove;
 import dev.xashmove.XashRuntime;
+import dev.xashmove.combat.CombatVars;
 import dev.xashmove.cvar.Cvar;
 import dev.xashmove.cvar.CvarStore;
 import dev.xashmove.cvar.Cvars;
@@ -80,6 +81,8 @@ public final class ClientState {
 
 	public static void recompute() {
 		XashRuntime.setClientVars(resolve());
+		ServerConfigPayload info = serverInfo;
+		XashRuntime.setClientCombat(info != null ? CombatVars.of(info.movevars()) : null);
 	}
 
 	private static MoveVars resolve() {
